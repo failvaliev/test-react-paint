@@ -1,32 +1,12 @@
-import { Layer, Text, Stage as KStage, Image as KImage, Line } from 'react-konva';
+import { Layer, Stage as KStage, Image as KImage, Line } from 'react-konva';
 import s from './Stage.module.scss';
 import { DragEvent, useCallback, useRef, useState } from 'react';
-import useImage from 'use-image';
-
-// interface URLImageProps {
-//   x: number;
-//   y: number;
-//   image: HTMLImageElement;
-// }
-
-// const URLImage = (props: URLImageProps) => {
-//   const { image, x, y } = props;
-
-//   return (
-//     <KImage
-//       image={image}
-//       x={x}
-//       y={y}
-//       offsetX={image ? image.width / 2 : 0}
-//       offsetY={image ? image.height / 2 : 0}
-//       draggable
-//     />
-//   );
-// };
+import { KonvaEventObject } from 'konva/lib/Node';
 
 interface StageProps {
   lineWidth: number;
   lineColor: string;
+  isDragging: boolean;
 }
 
 interface Stroke {
@@ -43,34 +23,30 @@ interface ImageData {
 }
 
 export const Stage = (props: StageProps) => {
-  const { lineColor, lineWidth } = props;
-
-  const [x, setX] = useState(0);
-  const [y, setY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const { lineColor, lineWidth, isDragging } = props;
 
   const [tool, setTool] = useState('pen'); // на будущее // eraser
   const [lines, setLines] = useState<Stroke[]>([]);
   const isDrawing = useRef(false);
 
-  const [images, setImages] = useState<HTMLImageElement[]>([]);
-
-  const [imageElem, setImageElem] = useState<HTMLImageElement | null>(null);
+  const [images, setImages] = useState<ImageData[]>([]);
 
   const handleMouseDown = (e: any) => {
+    if (isDragging) return;
     isDrawing.current = true;
     const pos = e.target.getStage().getPointerPosition();
     setLines([...lines, { t: tool, points: [pos.x, pos.y], c: lineColor, w: lineWidth }]);
   };
 
   const handleMouseMove = (e: any) => {
+    if (isDragging) return;
     if (!isDrawing.current) {
       return;
     }
     const stage = e.target.getStage();
     const point = stage.getPointerPosition();
     let lastLine = lines[lines.length - 1];
-    // add point
+
     lastLine.points = lastLine.points.concat([point.x, point.y]);
 
     lines.splice(lines.length - 1, 1, lastLine);
@@ -82,21 +58,15 @@ export const Stage = (props: StageProps) => {
   };
 
 
-  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {
-    defaultFn(e);
-  }
+  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => defaultFn(e);
 
-  const handleDrop = function (e: any) {
+  const handleDrop = function (e: DragEvent<HTMLDivElement>) {
     defaultFn(e);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      console.log(e.dataTransfer.files);
       const url = URL.createObjectURL(e.dataTransfer.files[0]);
-      console.log(url);
       let myImage = new Image();
       myImage.src = url;
-      console.log(myImage);
-      // setImageElem(myImage);
-      setImages(prev => prev.concat(myImage));
+      setImages(prev => prev.concat({ tag: myImage, x: 0, y: 0 }));
     }
   };
 
@@ -105,6 +75,16 @@ export const Stage = (props: StageProps) => {
     e.stopPropagation();
   }, []);
 
+  const handleDragEnd = useCallback((image: ImageData) => (e: KonvaEventObject<globalThis.DragEvent>) => {
+    if (!isDragging) return;
+
+    setImages(s => s.map(im => {
+      if (im.tag.src === image.tag.src) {
+        return { ...im, x: e.target.x(), y: e.target.y() }
+      }
+      return im;
+    }))
+  }, [isDragging]);
 
   return (
     <div
@@ -123,29 +103,16 @@ export const Stage = (props: StageProps) => {
         onMouseup={handleMouseUp}
       >
         <Layer>
-          {/* <Text
-          text="Draggable Text"
-          x={x}
-          y={y}
-          draggable
-          fill={isDragging ? 'green' : 'black'}
-          onDragStart={() => setIsDragging(true)}
-          onDragEnd={(e) => {
-            setX(e.target.x());
-            setY(e.target.y());
-            setIsDragging(false);
-          }}
-        /> */}
-          {/* {images.map(image => <URLImage image={image} x={200} y={200} key={image.src} />)} */}
           {images.map(image => (
             <KImage
-              image={image}
-              x={200}
-              y={200}
-              offsetX={image ? image.width / 2 : 0}
-              offsetY={image ? image.height / 2 : 0}
-              draggable
-              onDragStart={() => setIsDragging(true)}
+              key={image.tag.src}
+              image={image.tag}
+              x={image.x}
+              y={image.y}
+              offsetX={0}
+              offsetY={0}
+              draggable={isDragging}
+              onDragEnd={handleDragEnd(image)}
             />
           ))}
           {lines.map((line, i) => (

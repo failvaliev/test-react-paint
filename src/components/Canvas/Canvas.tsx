@@ -14,6 +14,7 @@ export const Canvas = ({ className }: CanvasProps) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [lineWidth, setLineWidth] = useState(5);
   const [lineColor, setLineColor] = useState("#000000");
+  const [isDragging, setIsDragging] = useState(false);
 
   // let dragTarget: any = null;
   const boxes = [
@@ -121,9 +122,7 @@ export const Canvas = ({ className }: CanvasProps) => {
   }
 
   return (
-    <div
-      className={s.Canvas}
-    >
+    <div className={s.Canvas}>
       <canvas
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}
@@ -137,12 +136,15 @@ export const Canvas = ({ className }: CanvasProps) => {
       <Menu
         colorValue={lineColor}
         lineWidthValue={lineWidth}
+        drugValue={isDragging}
         setLineColor={setLineColor}
         setLineWidth={setLineWidth}
+        setDrug={setIsDragging}
       />
       <Stage
         lineColor={lineColor}
         lineWidth={lineWidth}
+        isDragging={isDragging}
       />
     </div>
   )

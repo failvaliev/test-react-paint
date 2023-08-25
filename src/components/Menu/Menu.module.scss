@@ -1,0 +1,14 @@
+.Menu {
+  // width: 650px;
+  display: flex;
+  justify-content: space-evenly;
+  border-radius: 5px;
+  align-items: center;
+  background-color: #a3a3a32d;
+  margin: auto;
+  gap: 8px;
+  padding: 5px;
+  position: fixed;
+  top: 0;
+  z-index: 1;
+}

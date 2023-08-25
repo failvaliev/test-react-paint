@@ -1,4 +1,4 @@
-import { MouseEvent, useEffect, useRef, useState } from "react";
+import { DragEvent, MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import s from './Canvas.module.scss';
 import { Menu } from '../Menu/Menu';
 import { Stage } from "../Stage/Stage";
@@ -7,6 +7,7 @@ interface CanvasProps {
   className?: string;
 }
 
+// нативный canvas с рисованием, без картинок
 export const Canvas = ({ className }: CanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
@@ -120,7 +121,9 @@ export const Canvas = ({ className }: CanvasProps) => {
   }
 
   return (
-    <div className={s.Canvas}>
+    <div
+      className={s.Canvas}
+    >
       <canvas
         onMouseDown={onMouseDown}
         onMouseUp={onMouseUp}

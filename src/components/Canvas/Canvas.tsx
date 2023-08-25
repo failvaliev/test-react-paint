@@ -1,7 +1,6 @@
-import { DragEvent, MouseEvent, useCallback, useEffect, useRef, useState } from "react";
+import { MouseEvent, useEffect, useRef, useState } from "react";
 import s from './Canvas.module.scss';
 import { Menu } from '../Menu/Menu';
-import { Stage } from "../Stage/Stage";
 
 interface CanvasProps {
   className?: string;
@@ -15,43 +14,6 @@ export const Canvas = ({ className }: CanvasProps) => {
   const [lineWidth, setLineWidth] = useState(5);
   const [lineColor, setLineColor] = useState("#000000");
   const [isDragging, setIsDragging] = useState(false);
-
-  // let dragTarget: any = null;
-  const boxes = [
-    { x: 200, y: 220, w: 100, h: 50 },
-  ];
-  // let startX = 0;
-  // let startY = 0;
-  // let isDown = false;
-
-  // const hitBox = (x: number, y: number) => {
-  //   let isTarget = null;
-  //   for (let i = 0; i < boxes.length; i++) {
-  //     const box = boxes[i];
-  //     if (x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h) {
-  //       dragTarget = box;
-  //       isTarget = true;
-  //       break;
-  //     }
-  //   }
-  //   return isTarget;
-  // }
-
-  // const drawBoxes = () => {
-  //   // @ts-ignore
-  //   ctxRef.current.clearRect(0, 0, canvasRef.current.clientWidth, canvasRef.current.clientHeight);
-  //   boxes.map(info => drawFillRect(info));
-  // }
-
-  // const drawFillRect = (info: any) => {
-  //   const { x, y, w, h } = info;
-
-  //   if (ctxRef.current) {
-  //     ctxRef.current.beginPath();
-  //     ctxRef.current.fillStyle = 'black';
-  //     ctxRef.current.fillRect(x, y, w, h);
-  //   }
-  // }
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -76,11 +38,6 @@ export const Canvas = ({ className }: CanvasProps) => {
       );
       setIsDrawing(true);
     }
-    // if (canvasRef.current) {
-    //   startX = e.nativeEvent.offsetX - canvasRef.current.clientLeft;
-    //   startY = e.nativeEvent.offsetY - canvasRef.current.clientTop;
-    //   isDown = hitBox(startX, startY) || false;
-    // }
   };
 
   const onMouseUp = () => {
@@ -88,8 +45,6 @@ export const Canvas = ({ className }: CanvasProps) => {
       ctxRef.current.closePath();
       setIsDrawing(false);
     }
-    // dragTarget = null;
-    // isDown = false;
   };
 
   const onMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
@@ -103,18 +58,6 @@ export const Canvas = ({ className }: CanvasProps) => {
       );
 
       ctxRef.current.stroke();
-
-      // if (!isDown) return;
-
-      // const mouseX = e.nativeEvent.offsetX - canvasRef.current.clientLeft;
-      // const mouseY = e.nativeEvent.offsetY - canvasRef.current.clientTop;
-      // const dx = mouseX - startX;
-      // const dy = mouseY - startY;
-      // startX = mouseX;
-      // startY = mouseY;
-      // dragTarget.x += dx;
-      // dragTarget.y += dy;
-      // drawBoxes();
     }
   };
   const handleMouseOut = () => {
@@ -140,11 +83,6 @@ export const Canvas = ({ className }: CanvasProps) => {
         setLineColor={setLineColor}
         setLineWidth={setLineWidth}
         setDrug={setIsDragging}
-      />
-      <Stage
-        lineColor={lineColor}
-        lineWidth={lineWidth}
-        isDragging={isDragging}
       />
     </div>
   )

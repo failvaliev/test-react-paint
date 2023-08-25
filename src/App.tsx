@@ -1,11 +1,10 @@
 import React, { Suspense } from 'react';
-import { Canvas } from './components/Canvas/Canvas';
+import { Paint } from './components/Paint/Paint';
 
 export const App = () => {
-
   return (
-    <Suspense fallback={null}>
-      <Canvas />
+    <Suspense fallback={'Что-то не то случилось...'}>
+      <Paint />
     </Suspense>
   );
 }

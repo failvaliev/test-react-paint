@@ -22,6 +22,7 @@ interface ImageData {
   y: number;
 }
 
+// Еще можно сделать отмену, очистку, ластик и т.д.
 export const Stage = (props: StageProps) => {
   const { lineColor, lineWidth, isDragging } = props;
 
@@ -31,36 +32,46 @@ export const Stage = (props: StageProps) => {
 
   const [images, setImages] = useState<ImageData[]>([]);
 
-  const handleMouseDown = (e: any) => {
+  const handleMouseDown = useCallback((e: KonvaEventObject<MouseEvent>) => {
     if (isDragging) return;
     isDrawing.current = true;
-    const pos = e.target.getStage().getPointerPosition();
-    setLines([...lines, { t: tool, points: [pos.x, pos.y], c: lineColor, w: lineWidth }]);
-  };
+    const stage = e.target.getStage();
 
-  const handleMouseMove = (e: any) => {
+    if (stage) {
+      const pos = stage.getPointerPosition();
+      if (pos) {
+        setLines([...lines, { t: tool, points: [pos.x, pos.y], c: lineColor, w: lineWidth }]);
+      }
+    }
+  }, [isDragging, lineColor, lineWidth, lines, tool]);
+
+  const handleMouseMove = useCallback((e: KonvaEventObject<MouseEvent>) => {
     if (isDragging) return;
     if (!isDrawing.current) {
       return;
     }
     const stage = e.target.getStage();
-    const point = stage.getPointerPosition();
-    let lastLine = lines[lines.length - 1];
 
-    lastLine.points = lastLine.points.concat([point.x, point.y]);
+    if (stage) {
+      const point = stage.getPointerPosition();
 
-    lines.splice(lines.length - 1, 1, lastLine);
-    setLines(lines.concat());
-  };
+      if (point) {
+        let lastLine = lines[lines.length - 1];
+        lastLine.points = lastLine.points.concat([point.x, point.y]);
+        lines.splice(lines.length - 1, 1, lastLine);
+      }
+      setLines(lines.concat());
+    }
+  }, [isDragging, lines]);
 
-  const handleMouseUp = () => {
-    isDrawing.current = false;
-  };
+  const handleMouseUp = useCallback(() => isDrawing.current = false, []);
 
+  const defaultFn = useCallback((e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
 
-  const handleDragEnter = (e: DragEvent<HTMLDivElement>) => defaultFn(e);
-
-  const handleDrop = function (e: DragEvent<HTMLDivElement>) {
+  const handleDrop = useCallback((e: DragEvent<HTMLDivElement>) => {
     defaultFn(e);
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const url = URL.createObjectURL(e.dataTransfer.files[0]);
@@ -68,12 +79,7 @@ export const Stage = (props: StageProps) => {
       myImage.src = url;
       setImages(prev => prev.concat({ tag: myImage, x: 0, y: 0 }));
     }
-  };
-
-  const defaultFn = useCallback((e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
+  }, [defaultFn]);
 
   const handleDragEnd = useCallback((image: ImageData) => (e: KonvaEventObject<globalThis.DragEvent>) => {
     if (!isDragging) return;
@@ -89,7 +95,7 @@ export const Stage = (props: StageProps) => {
   return (
     <div
       className={s.stageWrap}
-      onDragEnter={handleDragEnter}
+      onDragEnter={defaultFn}
       onDragLeave={defaultFn}
       onDragOver={defaultFn}
       onDrop={handleDrop}
@@ -97,7 +103,6 @@ export const Stage = (props: StageProps) => {
       <KStage
         width={window.innerWidth}
         height={window.innerHeight}
-        className={s.Stage}
         onMouseDown={handleMouseDown}
         onMousemove={handleMouseMove}
         onMouseup={handleMouseUp}
